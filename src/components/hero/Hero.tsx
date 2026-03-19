@@ -1,0 +1,69 @@
+"use client";
+
+import { motion } from "framer-motion";
+import { ArrowUpRight } from "lucide-react";
+
+export default function Hero() {
+  return (
+    <section className="pt-32 pb-20 lg:pt-48 lg:pb-32 w-full">
+      <div className="max-w-4xl">
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+          className="flex items-center gap-3 mb-8"
+        >
+          <div className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+          </div>
+          <span className="text-sm font-medium text-[#666666] dark:text-[#888888] uppercase tracking-wider">
+            Disponible
+          </span>
+        </motion.div>
+
+        <motion.h1
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.1, ease: "easeOut" }}
+          className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-[#111111] dark:text-[#EDEDED] mb-8 leading-[1.1]"
+        >
+          Alexandre. <br />
+          <span className="text-[#666666] dark:text-[#888888]">
+            Développeur Fullstack & IA.
+          </span>
+        </motion.h1>
+
+        <motion.p
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}
+          className="text-lg sm:text-xl text-[#666666] dark:text-[#888888] mb-12 leading-relaxed max-w-2xl font-light"
+        >
+          Je conçois des agents & intégrations d&apos;intelligence artificielle pour Carrefour et je développe des applications web sur-mesure pour mes clients sous ma société AGWS.
+        </motion.p>
+
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.3, ease: "easeOut" }}
+          className="flex flex-wrap items-center gap-6"
+        >
+          <a
+            href="#projets"
+            className="group flex items-center gap-2 text-sm font-medium text-[#111111] dark:text-[#EDEDED] border-b border-[#111111] dark:border-[#EDEDED] pb-1 hover:text-[#666666] dark:hover:text-[#666666] hover:border-[#666666] dark:hover:border-[#888888] transition-colors"
+          >
+            Voir les projets
+            <ArrowUpRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+          </a>
+          <a
+            href="#contact"
+            className="group flex items-center gap-2 text-sm font-medium text-[#666666] dark:text-[#888888] hover:text-[#111111] dark:hover:text-[#EDEDED] transition-colors"
+          >
+            Me contacter
+          </a>
+        </motion.div>
+      </div>
+    </section>
+  );
+}
