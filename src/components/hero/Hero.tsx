@@ -3,7 +3,24 @@
 import { motion } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
 
+const skills = [
+  "gcp",
+  "docker",
+  "raspberrypi",
+  "github",
+  "python",
+  "ts",
+  "js",
+  "c",
+  "bash",
+  "linux",
+  "apple",
+];
+
 export default function Hero() {
+  const skillUrlLight = `https://skillicons.dev/icons?i=${skills.join(",")}&theme=light&perline=11`;
+  const skillUrlDark = `https://skillicons.dev/icons?i=${skills.join(",")}&theme=dark&perline=11`;
+
   return (
     <section className="pt-32 pb-20 lg:pt-48 lg:pb-32 w-full">
       <div className="max-w-4xl">
@@ -47,6 +64,26 @@ export default function Hero() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.3, ease: "easeOut" }}
+          className="mb-8"
+        >
+          <img
+            src={skillUrlLight}
+            alt="Stack technique"
+            className="max-w-full h-auto dark:hidden"
+            loading="lazy"
+          />
+          <img
+            src={skillUrlDark}
+            alt="Stack technique"
+            className="max-w-full h-auto hidden dark:block"
+            loading="lazy"
+          />
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.4, ease: "easeOut" }}
           className="flex flex-wrap items-center gap-6"
         >
           <a
