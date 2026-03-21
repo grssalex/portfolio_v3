@@ -1,6 +1,8 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { ChevronDown } from "lucide-react";
+import { useState } from "react";
 
 const experiences = [
   {
@@ -48,6 +50,12 @@ const experiences = [
 ];
 
 export default function Experience() {
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+
+  const toggleExpand = (id: string) => {
+    setExpandedId(expandedId === id ? null : id);
+  };
+
   return (
     <section id="experiences" className="py-24 border-t border-[#EAEAEA] dark:border-[#222222]">
       <motion.div
@@ -86,6 +94,55 @@ export default function Experience() {
               <p className="text-[#666666] dark:text-[#888888] leading-relaxed text-sm sm:text-base font-light mb-4 mt-2">
                 {exp.description}
               </p>
+
+              <button 
+                onClick={() => toggleExpand(exp.id)}
+                className="flex items-center gap-2 text-sm font-medium text-[#111111] dark:text-[#EDEDED] border border-[#EAEAEA] dark:border-[#222222] px-4 py-2 rounded-lg hover:bg-[#F5F5F5] dark:hover:bg-[#111111] transition-colors"
+              >
+                Voir les missions
+                <motion.div
+                  animate={{ rotate: expandedId === exp.id ? 180 : 0 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <ChevronDown className="w-4 h-4" />
+                </motion.div>
+              </button>
+
+              <AnimatePresence>
+                {expandedId === exp.id && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.3, ease: "easeInOut" }}
+                    className="overflow-hidden"
+                  >
+                    <div className="pt-6 space-y-6 border-l border-[#EAEAEA] dark:border-[#222222] ml-2 pl-6 mt-4">
+                      {exp.missions.map((mission, idx) => (
+                        <div key={idx} className="relative">
+                          <div className="absolute -left-[29px] top-2 w-2 h-2 rounded-full bg-[#111111] dark:bg-[#EDEDED]" />
+                          <h4 className="text-base font-medium text-[#111111] dark:text-[#EDEDED] mb-1">
+                            {mission.title}
+                          </h4>
+                          {mission.date && (
+                            <p className="text-xs text-[#666666] dark:text-[#888888] font-mono mb-2">
+                              {mission.date}
+                            </p>
+                          )}
+                          <p className="text-sm text-[#666666] dark:text-[#888888] font-light leading-relaxed mb-2">
+                            {mission.desc}
+                          </p>
+                          {mission.tech && (
+                            <p className="text-xs font-mono text-[#111111] dark:text-[#EDEDED]">
+                              <span className="text-[#666666] dark:text-[#888888]">Tech :</span> {mission.tech}
+                            </p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </motion.div>
         ))}
