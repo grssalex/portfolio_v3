@@ -12,13 +12,13 @@ interface Repo {
   description: string;
   html_url: string;
   language: string;
-  languages_url: string;
+  languages_url: string; // Ajout de l'URL pour fetch les langages
   stargazers_count: number;
   forks_count: number;
   updated_at: string;
   created_at: string;
   topics: string[];
-  languages?: string[];
+  languages?: string[]; // Pour stocker les 3 langages principaux
 }
 
 interface GithubStats {
@@ -28,6 +28,7 @@ interface GithubStats {
   login: string;
 }
 
+// Fonction pour déterminer le statut du repo
 const getRepoStatus = (createdAt: string, updatedAt: string) => {
   const now = new Date();
   const created = new Date(createdAt);
@@ -36,12 +37,16 @@ const getRepoStatus = (createdAt: string, updatedAt: string) => {
   const daysSinceCreation = Math.floor((now.getTime() - created.getTime()) / (1000 * 3600 * 24));
   const daysSinceUpdate = Math.floor((now.getTime() - updated.getTime()) / (1000 * 3600 * 24));
 
+  // Nouveau : créé dans les 5 derniers jours
   if (daysSinceCreation <= 5) return { label: "Nouveau", color: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" };
+  
+  // Mis à jour : modifié dans les 3 derniers jours (et pas "Nouveau")
   if (daysSinceUpdate <= 3) return { label: "Mis à jour", color: "bg-blue-500/10 text-blue-500 border-blue-500/20" };
   
   return null;
 };
 
+// Map des couleurs et icônes pour les langages
 const languageConfig: Record<string, { color: string; icon: string }> = {
   TypeScript: { color: "bg-blue-500", icon: "ts" },
   JavaScript: { color: "bg-yellow-400", icon: "js" },
@@ -56,6 +61,7 @@ export default function Projects() {
   const [repos, setRepos] = useState<Repo[]>([]);
   const [stats, setStats] = useState<GithubStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showAll, setShowAll] = useState(false);
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [streak] = useState(12);
@@ -68,17 +74,21 @@ export default function Projects() {
       .then((data) => setStats(data))
       .catch(console.error);
 
-    fetch("https://api.github.com/users/grssalex/repos?sort=updated&per_page=6")
+    // On fetch jusqu'à 30 repos pour pouvoir les afficher si "Voir tout" est cliqué
+    fetch("https://api.github.com/users/grssalex/repos?sort=updated&per_page=30")
       .then((res) => res.json())
       .then(async (data) => {
         if (Array.isArray(data)) {
           const validRepos = data.filter(r => !r.fork);
           
+          // On fetch les langages pour chaque repo
           const reposWithLanguages = await Promise.all(
             validRepos.map(async (repo) => {
               try {
+                // On essaie de récupérer les langages détaillés
                 const langRes = await fetch(repo.languages_url);
                 const langData = await langRes.json();
+                // On trie par nombre de lignes de code (valeur) et on prend les 3 premiers
                 const topLanguages = Object.keys(langData)
                   .sort((a, b) => langData[b] - langData[a])
                   .slice(0, 3);
@@ -88,6 +98,7 @@ export default function Projects() {
                   languages: topLanguages.length > 0 ? topLanguages : (repo.language ? [repo.language] : [])
                 };
               } catch (e) {
+                // En cas d'erreur (ex: rate limit), on se rabat sur le langage principal
                 return {
                   ...repo,
                   languages: repo.language ? [repo.language] : []
@@ -105,6 +116,9 @@ export default function Projects() {
         setLoading(false);
       });
   }, []);
+
+  // On limite l'affichage à 6 repos par défaut, ou tous si showAll est true
+  const displayedRepos = showAll ? repos : repos.slice(0, 6);
 
   return (
     <section id="projets" className="py-24 border-t border-[#EAEAEA] dark:border-[#222222]">
@@ -136,6 +150,7 @@ export default function Projects() {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
         
+        {/* Colonne de gauche : Profil & Stats (Plus fine : 3 colonnes) */}
         <motion.div 
           initial={{ opacity: 0, x: -10 }}
           whileInView={{ opacity: 1, x: 0 }}
@@ -202,6 +217,7 @@ export default function Projects() {
           </div>
         </motion.div>
 
+        {/* Grille des Repos (Plus large : 9 colonnes, affichage dense) */}
         <div className="lg:col-span-9 flex flex-col gap-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {loading ? (
@@ -209,7 +225,7 @@ export default function Projects() {
                 <div key={i} className="bg-[#F9F9F9] dark:bg-[#111111] rounded-2xl h-36 animate-pulse border border-[#EAEAEA] dark:border-[#222222]" />
               ))
             ) : (
-              repos.map((repo, index) => {
+              displayedRepos.map((repo, index) => {
                 const status = getRepoStatus(repo.created_at, repo.updated_at);
 
                 return (
@@ -220,7 +236,7 @@ export default function Projects() {
                     key={repo.id}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: index * 0.05 }}
+                    transition={{ duration: 0.3, delay: (index % 6) * 0.05 }}
                     className="group flex flex-col p-4 rounded-2xl bg-white dark:bg-[#0A0A0A] border border-[#EAEAEA] dark:border-[#222222] hover:border-[#CCCCCC] dark:hover:border-[#444444] transition-colors relative"
                   >
                     <div className="flex justify-between items-start mb-2">
@@ -269,6 +285,22 @@ export default function Projects() {
               })
             )}
           </div>
+
+          {/* Bouton "Voir plus" si on a plus de 6 repos */}
+          {!loading && repos.length > 6 && (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="flex justify-center mt-4"
+            >
+              <button
+                onClick={() => setShowAll(!showAll)}
+                className="px-6 py-2 text-sm font-medium text-[#111111] dark:text-[#EDEDED] bg-white dark:bg-[#0A0A0A] border border-[#EAEAEA] dark:border-[#222222] rounded-full hover:bg-[#F5F5F5] dark:hover:bg-[#111111] transition-colors"
+              >
+                {showAll ? "Voir moins" : `Voir tous les projets (${repos.length})`}
+              </button>
+            </motion.div>
+          )}
         </div>
       </div>
     </section>
