@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ArrowUpRight, Flame, Github } from "lucide-react";
+import { ArrowUpRight, Flame, Github, Star, GitFork } from "lucide-react";
 import { useEffect, useState } from "react";
 import { GitHubCalendar } from "react-github-calendar";
 import { useTheme } from "next-themes";
@@ -12,10 +12,13 @@ interface Repo {
   description: string;
   html_url: string;
   language: string;
+  languages_url: string;
   stargazers_count: number;
   forks_count: number;
   updated_at: string;
   created_at: string;
+  topics: string[];
+  languages?: string[];
 }
 
 interface GithubStats {
@@ -24,6 +27,30 @@ interface GithubStats {
   avatar_url: string;
   login: string;
 }
+
+const getRepoStatus = (createdAt: string, updatedAt: string) => {
+  const now = new Date();
+  const created = new Date(createdAt);
+  const updated = new Date(updatedAt);
+  
+  const daysSinceCreation = Math.floor((now.getTime() - created.getTime()) / (1000 * 3600 * 24));
+  const daysSinceUpdate = Math.floor((now.getTime() - updated.getTime()) / (1000 * 3600 * 24));
+
+  if (daysSinceCreation <= 5) return { label: "Nouveau", color: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" };
+  if (daysSinceUpdate <= 3) return { label: "Mis à jour", color: "bg-blue-500/10 text-blue-500 border-blue-500/20" };
+  
+  return null;
+};
+
+const languageConfig: Record<string, { color: string; icon: string }> = {
+  TypeScript: { color: "bg-blue-500", icon: "ts" },
+  JavaScript: { color: "bg-yellow-400", icon: "js" },
+  Python: { color: "bg-green-500", icon: "py" },
+  HTML: { color: "bg-orange-500", icon: "html" },
+  CSS: { color: "bg-blue-400", icon: "css" },
+  Vue: { color: "bg-emerald-500", icon: "vue" },
+  "Jupyter Notebook": { color: "bg-orange-400", icon: "py" },
+};
 
 export default function Projects() {
   const [repos, setRepos] = useState<Repo[]>([]);
@@ -43,9 +70,33 @@ export default function Projects() {
 
     fetch("https://api.github.com/users/grssalex/repos?sort=updated&per_page=6")
       .then((res) => res.json())
-      .then((data) => {
+      .then(async (data) => {
         if (Array.isArray(data)) {
-          setRepos(data.filter(r => !r.fork));
+          const validRepos = data.filter(r => !r.fork);
+          
+          const reposWithLanguages = await Promise.all(
+            validRepos.map(async (repo) => {
+              try {
+                const langRes = await fetch(repo.languages_url);
+                const langData = await langRes.json();
+                const topLanguages = Object.keys(langData)
+                  .sort((a, b) => langData[b] - langData[a])
+                  .slice(0, 3);
+                
+                return {
+                  ...repo,
+                  languages: topLanguages.length > 0 ? topLanguages : (repo.language ? [repo.language] : [])
+                };
+              } catch (e) {
+                return {
+                  ...repo,
+                  languages: repo.language ? [repo.language] : []
+                };
+              }
+            })
+          );
+          
+          setRepos(reposWithLanguages);
         }
         setLoading(false);
       })
@@ -158,30 +209,64 @@ export default function Projects() {
                 <div key={i} className="bg-[#F9F9F9] dark:bg-[#111111] rounded-2xl h-36 animate-pulse border border-[#EAEAEA] dark:border-[#222222]" />
               ))
             ) : (
-              repos.map((repo, index) => (
-                <motion.a
-                  href={repo.html_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  key={repo.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: index * 0.05 }}
-                  className="group flex flex-col p-4 rounded-2xl bg-white dark:bg-[#0A0A0A] border border-[#EAEAEA] dark:border-[#222222] hover:border-[#CCCCCC] dark:hover:border-[#444444] transition-colors"
-                >
-                  <h3 className="font-medium text-sm text-[#111111] dark:text-[#EDEDED] group-hover:text-blue-500 transition-colors truncate mb-2">
-                    {repo.name}
-                  </h3>
-                  <p className="text-xs text-[#666666] dark:text-[#888888] font-light line-clamp-2 mb-4 flex-1">
-                    {repo.description || "Aucune description."}
-                  </p>
-                  {repo.language && (
-                    <span className="text-[10px] font-mono text-[#666666] dark:text-[#888888]">
-                      {repo.language}
-                    </span>
-                  )}
-                </motion.a>
-              ))
+              repos.map((repo, index) => {
+                const status = getRepoStatus(repo.created_at, repo.updated_at);
+
+                return (
+                  <motion.a
+                    href={repo.html_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    key={repo.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, delay: index * 0.05 }}
+                    className="group flex flex-col p-4 rounded-2xl bg-white dark:bg-[#0A0A0A] border border-[#EAEAEA] dark:border-[#222222] hover:border-[#CCCCCC] dark:hover:border-[#444444] transition-colors relative"
+                  >
+                    <div className="flex justify-between items-start mb-2">
+                      <h3 className="font-medium text-sm text-[#111111] dark:text-[#EDEDED] group-hover:text-blue-500 transition-colors truncate pr-2">
+                        {repo.name}
+                      </h3>
+                      {status && (
+                        <span className={`text-[10px] px-2 py-0.5 rounded-full border ${status.color} whitespace-nowrap`}>
+                          {status.label}
+                        </span>
+                      )}
+                    </div>
+                    
+                    <p className="text-xs text-[#666666] dark:text-[#888888] font-light line-clamp-2 mb-4 flex-1">
+                      {repo.description || "Aucune description."}
+                    </p>
+                    
+                  <div className="flex items-center gap-3 mt-auto pt-3 border-t border-[#EAEAEA]/50 dark:border-[#222222]/50">
+                    <div className="flex flex-wrap gap-1.5">
+                      {repo.languages?.map((lang) => {
+                        const langConfig = languageConfig[lang];
+                        return (
+                          <span key={lang} className="flex items-center gap-1.5 text-[10px] font-mono text-[#666666] dark:text-[#888888] bg-[#F5F5F5] dark:bg-[#111111] px-1.5 py-0.5 rounded">
+                            <span className={`w-2 h-2 rounded-full ${langConfig?.color || 'bg-gray-400'}`} />
+                            {lang}
+                          </span>
+                        );
+                      })}
+                    </div>
+                    
+                    <div className="flex items-center gap-2 ml-auto text-[#666666] dark:text-[#888888]">
+                        {repo.stargazers_count > 0 && (
+                          <span className="flex items-center gap-0.5 text-[10px]">
+                            <Star className="w-3 h-3" /> {repo.stargazers_count}
+                          </span>
+                        )}
+                        {repo.forks_count > 0 && (
+                          <span className="flex items-center gap-0.5 text-[10px]">
+                            <GitFork className="w-3 h-3" /> {repo.forks_count}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </motion.a>
+                );
+              })
             )}
           </div>
         </div>
