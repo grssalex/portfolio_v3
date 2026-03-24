@@ -29,16 +29,16 @@ export default function Hero() {
       if (typedText.length < fullCommand.length) {
         const timeout = setTimeout(() => {
           setTypedText(fullCommand.slice(0, typedText.length + 1));
-        }, 50 + Math.random() * 50);
+        }, 15 + Math.random() * 25); // Vitesse augmentée
         return () => clearTimeout(timeout);
       } else {
-        const timeout = setTimeout(() => setTerminalState(1), 400);
+        const timeout = setTimeout(() => setTerminalState(1), 300);
         return () => clearTimeout(timeout);
       }
     }
     // Étape 2 : Afficher "Chargement..."
     else if (terminalState === 1) {
-      const timeout = setTimeout(() => setTerminalState(2), 800);
+      const timeout = setTimeout(() => setTerminalState(2), 600);
       return () => clearTimeout(timeout);
     }
   }, [terminalState, typedText]);
