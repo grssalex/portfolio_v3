@@ -75,7 +75,7 @@ export default function Hero() {
 
         <div className="h-24 mb-12">
           {terminalState < 2 ? (
-            <div className="font-mono text-sm sm:text-base text-[#666666] dark:text-[#888888] bg-[#F5F5F5] dark:bg-[#111111] p-4 rounded-lg border border-[#EAEAEA] dark:border-[#222222] inline-block">
+            <div className="font-mono text-sm sm:text-base text-[#666666] dark:text-[#888888] inline-block pt-2">
               <div className="flex items-center gap-2">
                 <span className="text-emerald-500">➜</span>
                 <span className="text-blue-500">~</span>
