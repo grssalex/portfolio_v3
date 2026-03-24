@@ -102,79 +102,85 @@ export default function Hero() {
           )}
         </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.3, ease: "easeOut" }}
-          className="mb-8 flex flex-wrap gap-2"
-        >
-          {skills.map((skill, index) => (
-            <motion.div
-              key={skill}
-              initial={{ y: 0 }}
-              animate={terminalState === 2 ? { y: [0, -10, 0] } : { y: 0 }}
-              transition={{
-                duration: 0.5,
-                delay: terminalState === 2 ? index * 0.05 : 0,
-                ease: "easeInOut"
-              }}
+        {terminalState === 2 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+            className="mb-8 flex flex-wrap gap-2"
+          >
+            {skills.map((skill, index) => (
+              <motion.div
+                key={skill}
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: [20, -10, 0], opacity: 1 }}
+                transition={{
+                  duration: 0.6,
+                  delay: 0.4 + index * 0.05,
+                  ease: "easeOut"
+                }}
+              >
+                <img
+                  src={`https://skillicons.dev/icons?i=${skill}&theme=light`}
+                  alt={skill}
+                  className="w-12 h-12 dark:hidden"
+                  loading="lazy"
+                />
+                <img
+                  src={`https://skillicons.dev/icons?i=${skill}&theme=dark`}
+                  alt={skill}
+                  className="w-12 h-12 hidden dark:block"
+                  loading="lazy"
+                />
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
+
+        {terminalState === 2 && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.8, ease: "easeOut" }}
+            className="flex flex-wrap items-center gap-6"
+          >
+            <a
+              href="#projets"
+              className="group flex items-center gap-2 text-sm font-medium text-[#111111] dark:text-[#EDEDED] border-b border-[#111111] dark:border-[#EDEDED] pb-1 hover:text-[#666666] dark:hover:text-[#888888] hover:border-[#666666] dark:hover:border-[#888888] transition-colors"
             >
-              <img
-                src={`https://skillicons.dev/icons?i=${skill}&theme=light`}
-                alt={skill}
-                className="w-12 h-12 dark:hidden"
-                loading="lazy"
-              />
-              <img
-                src={`https://skillicons.dev/icons?i=${skill}&theme=dark`}
-                alt={skill}
-                className="w-12 h-12 hidden dark:block"
-                loading="lazy"
-              />
-            </motion.div>
-          ))}
-        </motion.div>
+              Voir les projets
+              <ArrowUpRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+            </a>
+            <a
+              href="#contact"
+              className="group flex items-center gap-2 text-sm font-medium text-[#666666] dark:text-[#888888] hover:text-[#111111] dark:hover:text-[#EDEDED] transition-colors"
+            >
+              Me contacter
+            </a>
+          </motion.div>
+        )}
 
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.4, ease: "easeOut" }}
-          className="flex flex-wrap items-center gap-6"
-        >
-          <a
-            href="#projets"
-            className="group flex items-center gap-2 text-sm font-medium text-[#111111] dark:text-[#EDEDED] border-b border-[#111111] dark:border-[#EDEDED] pb-1 hover:text-[#666666] dark:hover:text-[#888888] hover:border-[#666666] dark:hover:border-[#888888] transition-colors"
+        {terminalState === 2 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5, delay: 1 }}
+            className="mt-20 flex items-center gap-6"
           >
-            Voir les projets
-            <ArrowUpRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-          </a>
-          <a
-            href="#contact"
-            className="group flex items-center gap-2 text-sm font-medium text-[#666666] dark:text-[#888888] hover:text-[#111111] dark:hover:text-[#EDEDED] transition-colors"
-          >
-            Me contacter
-          </a>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.6 }}
-          className="mt-20 flex items-center gap-6"
-        >
-          <a href="https://github.com/grssalex" target="_blank" rel="noopener noreferrer" className="text-[#666666] dark:text-[#888888] hover:text-[#111111] dark:hover:text-[#EDEDED] transition-colors">
-            <span className="sr-only">GitHub</span>
-            <Github className="w-5 h-5" />
-          </a>
-          <a href="https://linkedin.com/in/grssalex" target="_blank" rel="noopener noreferrer" className="text-[#666666] dark:text-[#888888] hover:text-[#111111] dark:hover:text-[#EDEDED] transition-colors">
-            <span className="sr-only">LinkedIn</span>
-            <Linkedin className="w-5 h-5" />
-          </a>
-          <a href="mailto:contact@grssalex.dev" className="text-[#666666] dark:text-[#888888] hover:text-[#111111] dark:hover:text-[#EDEDED] transition-colors">
-            <span className="sr-only">Email</span>
-            <Mail className="w-5 h-5" />
-          </a>
-        </motion.div>
+            <a href="https://github.com/grssalex" target="_blank" rel="noopener noreferrer" className="text-[#666666] dark:text-[#888888] hover:text-[#111111] dark:hover:text-[#EDEDED] transition-colors">
+              <span className="sr-only">GitHub</span>
+              <Github className="w-5 h-5" />
+            </a>
+            <a href="https://linkedin.com/in/grssalex" target="_blank" rel="noopener noreferrer" className="text-[#666666] dark:text-[#888888] hover:text-[#111111] dark:hover:text-[#EDEDED] transition-colors">
+              <span className="sr-only">LinkedIn</span>
+              <Linkedin className="w-5 h-5" />
+            </a>
+            <a href="mailto:contact@grssalex.dev" className="text-[#666666] dark:text-[#888888] hover:text-[#111111] dark:hover:text-[#EDEDED] transition-colors">
+              <span className="sr-only">Email</span>
+              <Mail className="w-5 h-5" />
+            </a>
+          </motion.div>
+        )}
       </div>
     </section>
   );
