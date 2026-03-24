@@ -75,7 +75,6 @@ export default function Projects() {
   const [showAll, setShowAll] = useState(false);
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
-  const [streak] = useState(12);
 
   useEffect(() => {
     setMounted(true);
@@ -244,9 +243,6 @@ export default function Projects() {
             <div className="mt-auto pt-6 border-t border-[#EAEAEA] dark:border-[#222222]">
               <div className="flex items-center justify-between mb-4">
                 <p className="text-xs font-medium text-[#111111] dark:text-[#EDEDED]">Activité</p>
-                <div className="flex items-center gap-1 text-xs text-orange-500">
-                  <Flame className="w-3 h-3" /> {streak}j
-                </div>
               </div>
               <div className="w-full overflow-hidden flex justify-center -ml-2">
                 {mounted && (
