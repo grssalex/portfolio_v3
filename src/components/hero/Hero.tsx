@@ -19,9 +19,6 @@ const skills = [
 ];
 
 export default function Hero() {
-  const skillUrlLight = `https://skillicons.dev/icons?i=${skills.join(",")}&theme=light&perline=11`;
-  const skillUrlDark = `https://skillicons.dev/icons?i=${skills.join(",")}&theme=dark&perline=11`;
-
   const [terminalState, setTerminalState] = useState(0);
   const [typedText, setTypedText] = useState("");
   const fullCommand = "./launch-grssalex-portfolio-v3";
@@ -109,20 +106,33 @@ export default function Hero() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.3, ease: "easeOut" }}
-          className="mb-8"
+          className="mb-8 flex flex-wrap gap-2"
         >
-          <img
-            src={skillUrlLight}
-            alt="Stack technique"
-            className="max-w-full h-auto dark:hidden"
-            loading="lazy"
-          />
-          <img
-            src={skillUrlDark}
-            alt="Stack technique"
-            className="max-w-full h-auto hidden dark:block"
-            loading="lazy"
-          />
+          {skills.map((skill, index) => (
+            <motion.div
+              key={skill}
+              initial={{ y: 0 }}
+              animate={terminalState === 2 ? { y: [0, -10, 0] } : { y: 0 }}
+              transition={{
+                duration: 0.5,
+                delay: terminalState === 2 ? index * 0.05 : 0,
+                ease: "easeInOut"
+              }}
+            >
+              <img
+                src={`https://skillicons.dev/icons?i=${skill}&theme=light`}
+                alt={skill}
+                className="w-12 h-12 dark:hidden"
+                loading="lazy"
+              />
+              <img
+                src={`https://skillicons.dev/icons?i=${skill}&theme=dark`}
+                alt={skill}
+                className="w-12 h-12 hidden dark:block"
+                loading="lazy"
+              />
+            </motion.div>
+          ))}
         </motion.div>
 
         <motion.div
