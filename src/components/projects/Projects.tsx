@@ -235,9 +235,16 @@ export default function Projects() {
               </div>
               <div className="bg-white dark:bg-[#0A0A0A] p-3 rounded-xl border border-[#EAEAEA] dark:border-[#222222]">
                 <h4 className="text-xl font-bold text-[#111111] dark:text-[#EDEDED]">
-                  {stats ? new Date().getFullYear() - new Date(stats.created_at).getFullYear() : "-"}
+                  {repos.length > 0 ? (() => {
+                    const langs = repos.map(r => r.language).filter(Boolean);
+                    const counts = langs.reduce((acc, l) => {
+                      acc[l] = (acc[l] || 0) + 1;
+                      return acc;
+                    }, {} as Record<string, number>);
+                    return Object.entries(counts).sort((a, b) => b[1] - a[1])[0]?.[0] || "-";
+                  })() : "-"}
                 </h4>
-                <p className="text-xs text-[#666666] dark:text-[#888888]">Années d'exp.</p>
+                <p className="text-xs text-[#666666] dark:text-[#888888]">Top Langage</p>
               </div>
             </div>
             
