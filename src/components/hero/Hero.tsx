@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { ArrowUpRight, Github, Linkedin, Mail } from "lucide-react";
+import { useState, useEffect } from "react";
 
 const skills = [
   "gcp",
@@ -20,6 +21,30 @@ const skills = [
 export default function Hero() {
   const skillUrlLight = `https://skillicons.dev/icons?i=${skills.join(",")}&theme=light&perline=11`;
   const skillUrlDark = `https://skillicons.dev/icons?i=${skills.join(",")}&theme=dark&perline=11`;
+
+  const [terminalState, setTerminalState] = useState(0);
+  const [typedText, setTypedText] = useState("");
+  const fullCommand = "./launch-grssalex-portfolio-v3";
+
+  useEffect(() => {
+    // Étape 1 : Taper la commande
+    if (terminalState === 0) {
+      if (typedText.length < fullCommand.length) {
+        const timeout = setTimeout(() => {
+          setTypedText(fullCommand.slice(0, typedText.length + 1));
+        }, 50 + Math.random() * 50);
+        return () => clearTimeout(timeout);
+      } else {
+        const timeout = setTimeout(() => setTerminalState(1), 400);
+        return () => clearTimeout(timeout);
+      }
+    }
+    // Étape 2 : Afficher "Chargement..."
+    else if (terminalState === 1) {
+      const timeout = setTimeout(() => setTerminalState(2), 800);
+      return () => clearTimeout(timeout);
+    }
+  }, [terminalState, typedText]);
 
   return (
     <section className="pt-32 pb-20 lg:pt-48 lg:pb-32 w-full">
@@ -51,14 +76,34 @@ export default function Hero() {
           </span>
         </motion.h1>
 
-        <motion.p
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}
-          className="text-lg sm:text-xl text-[#666666] dark:text-[#888888] mb-12 leading-relaxed max-w-2xl font-light"
-        >
-          Je conçois des agents & intégrations d&apos;intelligence artificielle pour Carrefour et je développe des applications web sur-mesure pour mes clients sous ma société AGWS.
-        </motion.p>
+        <div className="h-24 mb-12">
+          {terminalState < 2 ? (
+            <div className="font-mono text-sm sm:text-base text-[#666666] dark:text-[#888888] bg-[#F5F5F5] dark:bg-[#111111] p-4 rounded-lg border border-[#EAEAEA] dark:border-[#222222] inline-block">
+              <div className="flex items-center gap-2">
+                <span className="text-emerald-500">➜</span>
+                <span className="text-blue-500">~</span>
+                <span>{typedText}</span>
+                {terminalState === 0 && (
+                  <span className="w-2 h-4 bg-[#111111] dark:bg-[#EDEDED] animate-pulse inline-block" />
+                )}
+              </div>
+              {terminalState === 1 && (
+                <div className="mt-2 text-[#111111] dark:text-[#EDEDED] flex items-center gap-2">
+                  <span className="animate-spin">⠋</span> Chargement...
+                </div>
+              )}
+            </div>
+          ) : (
+            <motion.p
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, ease: "easeOut" }}
+              className="text-lg sm:text-xl text-[#666666] dark:text-[#888888] leading-relaxed max-w-2xl font-light"
+            >
+              Je conçois des agents & intégrations d&apos;intelligence artificielle pour Carrefour et je développe des applications web sur-mesure pour mes clients sous ma société AGWS.
+            </motion.p>
+          )}
+        </div>
 
         <motion.div
           initial={{ opacity: 0, y: 10 }}
