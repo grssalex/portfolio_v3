@@ -46,21 +46,32 @@ const getRepoStatus = (createdAt: string, updatedAt: string) => {
   return null;
 };
 
-// Map des couleurs et icônes pour les langages
-const languageConfig: Record<string, { color: string; icon: string }> = {
-  TypeScript: { color: "bg-blue-500", icon: "ts" },
-  JavaScript: { color: "bg-yellow-400", icon: "js" },
-  Python: { color: "bg-green-500", icon: "py" },
-  HTML: { color: "bg-orange-500", icon: "html" },
-  CSS: { color: "bg-blue-400", icon: "css" },
-  Vue: { color: "bg-emerald-500", icon: "vue" },
-  "Jupyter Notebook": { color: "bg-orange-400", icon: "py" },
+const languageColors: Record<string, string> = {
+  TypeScript: "#3178c6",
+  JavaScript: "#f1e05a",
+  Python: "#3572A5",
+  HTML: "#e34c26",
+  CSS: "#563d7c",
+  Vue: "#41b883",
+  "Jupyter Notebook": "#DA5B0B",
+  Shell: "#89e051",
+  Dockerfile: "#384d54",
+  Go: "#00ADD8",
+  Rust: "#dea584",
+  Java: "#b07219",
+  C: "#555555",
+  "C++": "#f34b7d",
+  Ruby: "#701516",
+  PHP: "#4F5D95",
+  Swift: "#F05138",
+  Kotlin: "#A97BFF",
 };
 
 export default function Projects() {
   const [repos, setRepos] = useState<Repo[]>([]);
   const [stats, setStats] = useState<GithubStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [showAll, setShowAll] = useState(false);
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
@@ -69,26 +80,45 @@ export default function Projects() {
   useEffect(() => {
     setMounted(true);
     
-    fetch("https://api.github.com/users/grssalex")
-      .then((res) => res.json())
-      .then((data) => setStats(data))
-      .catch(console.error);
+    // Utiliser un cache local pour éviter le rate limit en dev
+    const CACHE_KEY = "github_portfolio_data";
+    const CACHE_TIME = 1000 * 60 * 60; // 1 heure
+    
+    const cachedData = localStorage.getItem(CACHE_KEY);
+    if (cachedData) {
+      try {
+        const { stats: cachedStats, repos: cachedRepos, timestamp } = JSON.parse(cachedData);
+        if (Date.now() - timestamp < CACHE_TIME) {
+          setStats(cachedStats);
+          setRepos(cachedRepos);
+          setLoading(false);
+          return;
+        }
+      } catch (e) {
+        console.error("Cache parsing error", e);
+      }
+    }
 
-    // On fetch jusqu'à 30 repos pour pouvoir les afficher si "Voir tout" est cliqué
-    fetch("https://api.github.com/users/grssalex/repos?sort=updated&per_page=30")
-      .then((res) => res.json())
-      .then(async (data) => {
-        if (Array.isArray(data)) {
-          const validRepos = data.filter(r => !r.fork);
+    const fetchData = async () => {
+      try {
+        const statsRes = await fetch("https://api.github.com/users/grssalex");
+        if (!statsRes.ok) throw new Error("API limit");
+        const statsData = await statsRes.json();
+        setStats(statsData);
+
+        const reposRes = await fetch("https://api.github.com/users/grssalex/repos?sort=updated&per_page=30");
+        if (!reposRes.ok) throw new Error("API limit");
+        const reposData = await reposRes.json();
+
+        if (Array.isArray(reposData)) {
+          const validRepos = reposData.filter(r => !r.fork);
           
-          // On fetch les langages pour chaque repo
           const reposWithLanguages = await Promise.all(
             validRepos.map(async (repo) => {
               try {
-                // On essaie de récupérer les langages détaillés
                 const langRes = await fetch(repo.languages_url);
+                if (!langRes.ok) throw new Error("API limit");
                 const langData = await langRes.json();
-                // On trie par nombre de lignes de code (valeur) et on prend les 3 premiers
                 const topLanguages = Object.keys(langData)
                   .sort((a, b) => langData[b] - langData[a])
                   .slice(0, 3);
@@ -97,8 +127,7 @@ export default function Projects() {
                   ...repo,
                   languages: topLanguages.length > 0 ? topLanguages : (repo.language ? [repo.language] : [])
                 };
-              } catch (e) {
-                // En cas d'erreur (ex: rate limit), on se rabat sur le langage principal
+              } catch {
                 return {
                   ...repo,
                   languages: repo.language ? [repo.language] : []
@@ -108,13 +137,30 @@ export default function Projects() {
           );
           
           setRepos(reposWithLanguages);
+          
+          // Sauvegarder dans le cache
+          localStorage.setItem(CACHE_KEY, JSON.stringify({
+            stats: statsData,
+            repos: reposWithLanguages,
+            timestamp: Date.now()
+          }));
         }
         setLoading(false);
-      })
-      .catch((err) => {
+      } catch (err) {
         console.error("Failed to fetch repos", err);
+        // Si on a une erreur mais qu'on a du cache expiré, on l'utilise quand même
+        if (cachedData) {
+          const { stats: cachedStats, repos: cachedRepos } = JSON.parse(cachedData);
+          setStats(cachedStats);
+          setRepos(cachedRepos);
+        } else {
+          setError(true);
+        }
         setLoading(false);
-      });
+      }
+    };
+
+    fetchData();
   }, []);
 
   // On limite l'affichage à 6 repos par défaut, ou tous si showAll est true
@@ -224,6 +270,20 @@ export default function Projects() {
               [...Array(6)].map((_, i) => (
                 <div key={i} className="bg-[#F9F9F9] dark:bg-[#111111] rounded-2xl h-36 animate-pulse border border-[#EAEAEA] dark:border-[#222222]" />
               ))
+            ) : error || repos.length === 0 ? (
+              <div className="col-span-full flex flex-col items-center justify-center py-12 text-center">
+                <p className="text-sm text-[#666666] dark:text-[#888888] mb-3">
+                  Impossible de charger les repos pour le moment.
+                </p>
+                <a
+                  href="https://github.com/grssalex"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm font-medium text-[#111111] dark:text-[#EDEDED] border border-[#EAEAEA] dark:border-[#222222] px-4 py-2 rounded-lg hover:bg-[#F5F5F5] dark:hover:bg-[#111111] transition-colors"
+                >
+                  Voir sur GitHub
+                </a>
+              </div>
             ) : (
               displayedRepos.map((repo, index) => {
                 const status = getRepoStatus(repo.created_at, repo.updated_at);
@@ -256,15 +316,15 @@ export default function Projects() {
                     
                   <div className="flex items-center gap-3 mt-auto pt-3 border-t border-[#EAEAEA]/50 dark:border-[#222222]/50">
                     <div className="flex flex-wrap gap-1.5">
-                      {repo.languages?.map((lang) => {
-                        const langConfig = languageConfig[lang];
-                        return (
+                      {repo.languages?.map((lang) => (
                           <span key={lang} className="flex items-center gap-1.5 text-[10px] font-mono text-[#666666] dark:text-[#888888] bg-[#F5F5F5] dark:bg-[#111111] px-1.5 py-0.5 rounded">
-                            <span className={`w-2 h-2 rounded-full ${langConfig?.color || 'bg-gray-400'}`} />
+                            <span
+                              className="w-2 h-2 rounded-full shrink-0"
+                              style={{ backgroundColor: languageColors[lang] || "#8b8b8b" }}
+                            />
                             {lang}
                           </span>
-                        );
-                      })}
+                        ))}
                     </div>
                     
                     <div className="flex items-center gap-2 ml-auto text-[#666666] dark:text-[#888888]">
