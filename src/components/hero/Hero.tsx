@@ -52,12 +52,40 @@ export default function Hero() {
         case "rm -rf /":
           output = "Deleting system files... 0%";
           setTimeout(() => {
-            document.body.style.transition = "all 3s ease";
-            document.body.style.transform = "scale(0) rotate(720deg)";
-            document.body.style.opacity = "0";
+            // Effet trou noir (aspiration vers le centre)
+            document.body.style.transition = "all 2.5s cubic-bezier(0.5, 0, 0.2, 1)";
+            document.body.style.transform = "scale(0.001)";
+            document.body.style.filter = "blur(20px) brightness(0)";
+            document.body.style.borderRadius = "50%";
+            
+            // Créer le message de fin directement dans le DOM
             setTimeout(() => {
-              alert("What have you done? 😱\n(Recharge la page pour réparer tes bêtises)");
-            }, 3000);
+              const msg = document.createElement("div");
+              msg.style.position = "fixed";
+              msg.style.top = "0";
+              msg.style.left = "0";
+              msg.style.width = "100vw";
+              msg.style.height = "100vh";
+              msg.style.backgroundColor = "black";
+              msg.style.color = "#00ff00";
+              msg.style.fontFamily = "monospace";
+              msg.style.display = "flex";
+              msg.style.flexDirection = "column";
+              msg.style.alignItems = "center";
+              msg.style.justifyContent = "center";
+              msg.style.zIndex = "999999";
+              msg.style.transform = "scale(1)"; // Annule le scale du body pour cet élément
+              
+              // On doit l'attacher au html car le body est réduit à 0
+              msg.innerHTML = `
+                <h1 style="font-size: 2rem; margin-bottom: 20px;">SYSTEM DESTROYED</h1>
+                <p>What have you done? 😱</p>
+                <button onclick="window.location.reload()" style="margin-top: 30px; padding: 10px 20px; border: 1px solid #00ff00; background: transparent; color: #00ff00; cursor: pointer; font-family: monospace;">
+                  REBOOT SYSTEM
+                </button>
+              `;
+              document.documentElement.appendChild(msg);
+            }, 2500);
           }, 1000);
           break;
         case "date":
