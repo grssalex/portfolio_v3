@@ -4,6 +4,74 @@ import { motion, useDragControls } from "framer-motion";
 import { ArrowUpRight, Github, Linkedin, Mail } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 
+// Composant Matrix Background
+const MatrixRain = () => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const katakana = "アァカサタナハマヤャラワガザダバパイィキシチニヒミリヰギジヂビピウゥクスツヌフムユュルグズブヅプエェケセテネヘメレゲゼデベペオォコソトノホモヨョロゴゾドボポヴッン";
+    const latin = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    const nums = "0123456789";
+    const alphabet = katakana + latin + nums;
+
+    const fontSize = 16;
+    const columns = canvas.width / fontSize;
+
+    const rainDrops: number[] = [];
+    for (let x = 0; x < columns; x++) {
+      rainDrops[x] = 1;
+    }
+
+    const draw = () => {
+      ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.fillStyle = "#0F0";
+      ctx.font = fontSize + "px monospace";
+
+      for (let i = 0; i < rainDrops.length; i++) {
+        const text = alphabet.charAt(Math.floor(Math.random() * alphabet.length));
+        ctx.fillText(text, i * fontSize, rainDrops[i] * fontSize);
+
+        if (rainDrops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+          rainDrops[i] = 0;
+        }
+        rainDrops[i]++;
+      }
+    };
+
+    const interval = setInterval(draw, 30);
+    
+    const handleResize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+    
+    window.addEventListener("resize", handleResize);
+    
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      className="fixed inset-0 z-[-1] opacity-30 pointer-events-none"
+    />
+  );
+};
+
 const skills = [
   "gcp",
   "docker",
@@ -22,6 +90,7 @@ export default function Hero() {
   const [terminalState, setTerminalState] = useState(0);
   const [typedText, setTypedText] = useState("");
   const [isInteractive, setIsInteractive] = useState(false);
+  const [isMatrixMode, setIsMatrixMode] = useState(false);
   const [commandInput, setCommandInput] = useState("");
   const [commandHistory, setCommandHistory] = useState<{cmd: string, output: string}[]>([]);
   const fullCommand = "./launch-grssalex-portfolio-v3.sh";
@@ -92,7 +161,14 @@ export default function Hero() {
           output = new Date().toString();
           break;
         case "help":
-          output = "Available commands: whoami, skills, clear, date, sudo, exit";
+          output = "Available commands: whoami, skills, clear, date, sudo, matrix, exit";
+          break;
+        case "matrix":
+          setIsMatrixMode(!isMatrixMode);
+          output = isMatrixMode ? "Exiting the Matrix..." : "Wake up, Neo...";
+          if (!isMatrixMode) {
+            document.documentElement.classList.add('dark');
+          }
           break;
         case "exit":
           setIsInteractive(false);
@@ -129,6 +205,7 @@ export default function Hero() {
 
   return (
     <section className="pt-32 pb-20 lg:pt-48 lg:pb-32 w-full">
+      {isMatrixMode && <MatrixRain />}
       <div className="max-w-4xl">
         <motion.div
           initial={{ opacity: 0, y: 10 }}
