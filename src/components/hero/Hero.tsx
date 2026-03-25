@@ -242,7 +242,7 @@ export default function Hero() {
               dragControls={dragControls}
               dragListener={false}
               dragMomentum={false}
-              className="font-mono text-sm sm:text-base text-[#666666] dark:text-[#888888] bg-[#F5F5F5] dark:bg-[#111111] p-0 rounded-lg border border-[#EAEAEA] dark:border-[#222222] w-full max-w-2xl h-64 absolute top-0 left-0 z-50 shadow-2xl flex flex-col overflow-hidden"
+              className="font-mono text-sm sm:text-base text-[#666666] dark:text-[#888888] bg-[#F5F5F5] dark:bg-[#111111] p-0 rounded-lg border border-[#EAEAEA] dark:border-[#222222] w-full max-w-2xl h-64 absolute top-0 left-0 z-50 shadow-2xl flex flex-col overflow-hidden resize min-h-[200px] min-w-[300px] max-h-[80vh] max-w-[90vw]"
               style={{ touchAction: "none" }}
             >
               {/* Header draggable */}
