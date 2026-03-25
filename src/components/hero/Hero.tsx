@@ -1,8 +1,8 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, useDragControls } from "framer-motion";
 import { ArrowUpRight, Github, Linkedin, Mail } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 const skills = [
   "gcp",
@@ -25,6 +25,9 @@ export default function Hero() {
   const [commandInput, setCommandInput] = useState("");
   const [commandHistory, setCommandHistory] = useState<{cmd: string, output: string}[]>([]);
   const fullCommand = "./launch-grssalex-portfolio-v3.sh";
+  
+  const dragControls = useDragControls();
+  const terminalRef = useRef<HTMLDivElement>(null);
 
   // Easter egg commands
   const handleCommand = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -117,46 +120,62 @@ export default function Hero() {
 
         <div className="h-24 mb-12 relative">
           {isInteractive ? (
-            <div className="font-mono text-sm sm:text-base text-[#666666] dark:text-[#888888] bg-[#F5F5F5] dark:bg-[#111111] p-4 rounded-lg border border-[#EAEAEA] dark:border-[#222222] w-full max-w-2xl h-48 overflow-y-auto absolute top-0 left-0 z-50 shadow-xl">
-              <div className="flex justify-between items-center mb-2 pb-2 border-b border-[#EAEAEA] dark:border-[#222222]">
-                <div className="flex gap-1.5">
-                  <div className="w-3 h-3 rounded-full bg-red-500 cursor-pointer" onClick={() => setIsInteractive(false)} />
+            <motion.div 
+              ref={terminalRef}
+              drag
+              dragControls={dragControls}
+              dragListener={false}
+              dragMomentum={false}
+              className="font-mono text-sm sm:text-base text-[#666666] dark:text-[#888888] bg-[#F5F5F5] dark:bg-[#111111] p-0 rounded-lg border border-[#EAEAEA] dark:border-[#222222] w-full max-w-2xl h-64 absolute top-0 left-0 z-50 shadow-2xl flex flex-col overflow-hidden"
+              style={{ touchAction: "none" }}
+            >
+              {/* Header draggable */}
+              <div 
+                className="flex justify-between items-center px-4 py-3 bg-[#EAEAEA] dark:bg-[#222222] cursor-grab active:cursor-grabbing select-none"
+                onPointerDown={(e) => dragControls.start(e)}
+              >
+                <div className="flex gap-2">
+                  <div className="w-3 h-3 rounded-full bg-red-500 cursor-pointer hover:bg-red-600 transition-colors" onClick={() => setIsInteractive(false)} />
                   <div className="w-3 h-3 rounded-full bg-yellow-500" />
                   <div className="w-3 h-3 rounded-full bg-green-500" />
                 </div>
-                <span className="text-xs">alex@portfolio ~ zsh</span>
+                <span className="text-xs font-medium text-[#111111] dark:text-[#EDEDED]">alex@portfolio ~ zsh</span>
+                <div className="w-10"></div> {/* Spacer pour centrer le titre */}
               </div>
               
-              <div className="flex flex-col gap-1">
-                <div className="text-[#111111] dark:text-[#EDEDED] mb-2">Type 'help' to see available commands.</div>
-                
-                {commandHistory.map((item, i) => (
-                  <div key={i} className="flex flex-col">
-                    <div className="flex items-center gap-2">
-                      <span className="text-emerald-500">➜</span>
-                      <span className="text-blue-500">~</span>
-                      <span className="text-[#111111] dark:text-[#EDEDED]">{item.cmd}</span>
+              {/* Contenu du terminal */}
+              <div className="flex-1 p-4 overflow-y-auto">
+                <div className="flex flex-col gap-1">
+                  <div className="text-[#111111] dark:text-[#EDEDED] mb-2">Type 'help' to see available commands.</div>
+                  
+                  {commandHistory.map((item, i) => (
+                    <div key={i} className="flex flex-col">
+                      <div className="flex items-center gap-2">
+                        <span className="text-emerald-500">➜</span>
+                        <span className="text-blue-500">~</span>
+                        <span className="text-[#111111] dark:text-[#EDEDED]">{item.cmd}</span>
+                      </div>
+                      <div className="ml-6 mb-2 whitespace-pre-wrap">{item.output}</div>
                     </div>
-                    <div className="ml-6 mb-2">{item.output}</div>
+                  ))}
+                  
+                  <div className="flex items-center gap-2">
+                    <span className="text-emerald-500">➜</span>
+                    <span className="text-blue-500">~</span>
+                    <input
+                      type="text"
+                      value={commandInput}
+                      onChange={(e) => setCommandInput(e.target.value)}
+                      onKeyDown={handleCommand}
+                      className="bg-transparent border-none outline-none flex-1 text-[#111111] dark:text-[#EDEDED]"
+                      autoFocus
+                      spellCheck="false"
+                      autoComplete="off"
+                    />
                   </div>
-                ))}
-                
-                <div className="flex items-center gap-2">
-                  <span className="text-emerald-500">➜</span>
-                  <span className="text-blue-500">~</span>
-                  <input
-                    type="text"
-                    value={commandInput}
-                    onChange={(e) => setCommandInput(e.target.value)}
-                    onKeyDown={handleCommand}
-                    className="bg-transparent border-none outline-none flex-1 text-[#111111] dark:text-[#EDEDED]"
-                    autoFocus
-                    spellCheck="false"
-                    autoComplete="off"
-                  />
                 </div>
               </div>
-            </div>
+            </motion.div>
           ) : terminalState < 2 ? (
             <div 
               className="font-mono text-sm sm:text-base text-[#666666] dark:text-[#888888] inline-block pt-2 cursor-pointer hover:opacity-80 transition-opacity"
