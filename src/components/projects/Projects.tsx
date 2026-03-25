@@ -1,10 +1,11 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, useMotionTemplate, useMotionValue } from "framer-motion";
 import { ArrowUpRight, Flame, Github, Star, GitFork } from "lucide-react";
 import { useEffect, useState } from "react";
 import { GitHubCalendar } from "react-github-calendar";
 import { useTheme } from "next-themes";
+import confetti from "canvas-confetti";
 
 interface Repo {
   id: number;
@@ -67,6 +68,87 @@ const languageColors: Record<string, string> = {
   Swift: "#F05138",
   Kotlin: "#A97BFF",
 };
+
+// Composant carte avec effet Magnetic Glow
+function ProjectCard({ repo, index, status }: { repo: Repo, index: number, status: any }) {
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+
+  function handleMouseMove({ currentTarget, clientX, clientY }: React.MouseEvent) {
+    const { left, top } = currentTarget.getBoundingClientRect();
+    mouseX.set(clientX - left);
+    mouseY.set(clientY - top);
+  }
+
+  return (
+    <motion.a
+      href={repo.html_url}
+      target="_blank"
+      rel="noopener noreferrer"
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3, delay: (index % 6) * 0.05 }}
+      onMouseMove={handleMouseMove}
+      className="group relative flex flex-col p-4 rounded-2xl bg-white dark:bg-[#0A0A0A] border border-[#EAEAEA] dark:border-[#222222] transition-colors overflow-hidden"
+    >
+      <motion.div
+        className="pointer-events-none absolute -inset-px rounded-2xl opacity-0 transition duration-300 group-hover:opacity-100"
+        style={{
+          background: useMotionTemplate`
+            radial-gradient(
+              350px circle at ${mouseX}px ${mouseY}px,
+              rgba(14, 165, 233, 0.15),
+              transparent 80%
+            )
+          `,
+        }}
+      />
+      <div className="relative z-10 flex flex-col h-full">
+        <div className="flex justify-between items-start mb-2">
+          <h3 className="font-medium text-sm text-[#111111] dark:text-[#EDEDED] group-hover:text-blue-500 transition-colors truncate pr-2">
+            {repo.name}
+          </h3>
+          {status && (
+            <span className={`text-[10px] px-2 py-0.5 rounded-full border ${status.color} whitespace-nowrap`}>
+              {status.label}
+            </span>
+          )}
+        </div>
+        
+        <p className="text-xs text-[#666666] dark:text-[#888888] font-light line-clamp-2 mb-4 flex-1">
+          {repo.description || "Aucune description."}
+        </p>
+        
+        <div className="flex items-center gap-3 mt-auto pt-3 border-t border-[#EAEAEA]/50 dark:border-[#222222]/50">
+          <div className="flex flex-wrap gap-1.5">
+            {repo.languages?.map((lang) => (
+              <span key={lang} className="flex items-center gap-1.5 text-[10px] font-mono text-[#666666] dark:text-[#888888] bg-[#F5F5F5] dark:bg-[#111111] px-1.5 py-0.5 rounded">
+                <span
+                  className="w-2 h-2 rounded-full shrink-0"
+                  style={{ backgroundColor: languageColors[lang] || "#8b8b8b" }}
+                />
+                {lang}
+              </span>
+            ))}
+          </div>
+          
+          <div className="flex items-center gap-2 ml-auto text-[#666666] dark:text-[#888888]">
+            {repo.stargazers_count > 0 && (
+              <span className="flex items-center gap-0.5 text-[10px]">
+                <Star className="w-3 h-3" /> {repo.stargazers_count}
+              </span>
+            )}
+            {repo.forks_count > 0 && (
+              <span className="flex items-center gap-0.5 text-[10px]">
+                <GitFork className="w-3 h-3" /> {repo.forks_count}
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+    </motion.a>
+  );
+}
 
 export default function Projects() {
   const [repos, setRepos] = useState<Repo[]>([]);
@@ -177,6 +259,32 @@ export default function Projects() {
   // On limite l'affichage à 6 repos par défaut, ou tous si showAll est true
   const displayedRepos = showAll ? filteredRepos : filteredRepos.slice(0, 6);
 
+  const handleAvatarClick = () => {
+    const duration = 3 * 1000;
+    const animationEnd = Date.now() + duration;
+    const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+    const randomInRange = (min: number, max: number) => Math.random() * (max - min) + min;
+
+    const interval: any = setInterval(function() {
+      const timeLeft = animationEnd - Date.now();
+
+      if (timeLeft <= 0) {
+        return clearInterval(interval);
+      }
+
+      const particleCount = 50 * (timeLeft / duration);
+      confetti({
+        ...defaults, particleCount,
+        origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 }
+      });
+      confetti({
+        ...defaults, particleCount,
+        origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 }
+      });
+    }, 250);
+  };
+
   return (
     <section id="projets" className="py-24 border-t border-[#EAEAEA] dark:border-[#222222]">
       <motion.div
@@ -221,7 +329,8 @@ export default function Projects() {
                 <img 
                   src={stats.avatar_url} 
                   alt="GitHub Avatar" 
-                  className="w-12 h-12 rounded-full border border-[#EAEAEA] dark:border-[#333333]"
+                  onClick={handleAvatarClick}
+                  className="w-12 h-12 rounded-full border border-[#EAEAEA] dark:border-[#333333] cursor-pointer hover:scale-110 transition-transform active:scale-95"
                 />
               ) : (
                 <div className="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-800 animate-pulse" />
@@ -346,61 +455,7 @@ export default function Projects() {
             ) : (
               displayedRepos.map((repo, index) => {
                 const status = getRepoStatus(repo.created_at, repo.updated_at);
-
-                return (
-                  <motion.a
-                    href={repo.html_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    key={repo.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: (index % 6) * 0.05 }}
-                    className="group flex flex-col p-4 rounded-2xl bg-white dark:bg-[#0A0A0A] border border-[#EAEAEA] dark:border-[#222222] hover:border-[#CCCCCC] dark:hover:border-[#444444] transition-colors relative"
-                  >
-                    <div className="flex justify-between items-start mb-2">
-                      <h3 className="font-medium text-sm text-[#111111] dark:text-[#EDEDED] group-hover:text-blue-500 transition-colors truncate pr-2">
-                        {repo.name}
-                      </h3>
-                      {status && (
-                        <span className={`text-[10px] px-2 py-0.5 rounded-full border ${status.color} whitespace-nowrap`}>
-                          {status.label}
-                        </span>
-                      )}
-                    </div>
-                    
-                    <p className="text-xs text-[#666666] dark:text-[#888888] font-light line-clamp-2 mb-4 flex-1">
-                      {repo.description || "Aucune description."}
-                    </p>
-                    
-                  <div className="flex items-center gap-3 mt-auto pt-3 border-t border-[#EAEAEA]/50 dark:border-[#222222]/50">
-                    <div className="flex flex-wrap gap-1.5">
-                      {repo.languages?.map((lang) => (
-                          <span key={lang} className="flex items-center gap-1.5 text-[10px] font-mono text-[#666666] dark:text-[#888888] bg-[#F5F5F5] dark:bg-[#111111] px-1.5 py-0.5 rounded">
-                            <span
-                              className="w-2 h-2 rounded-full shrink-0"
-                              style={{ backgroundColor: languageColors[lang] || "#8b8b8b" }}
-                            />
-                            {lang}
-                          </span>
-                        ))}
-                    </div>
-                    
-                    <div className="flex items-center gap-2 ml-auto text-[#666666] dark:text-[#888888]">
-                        {repo.stargazers_count > 0 && (
-                          <span className="flex items-center gap-0.5 text-[10px]">
-                            <Star className="w-3 h-3" /> {repo.stargazers_count}
-                          </span>
-                        )}
-                        {repo.forks_count > 0 && (
-                          <span className="flex items-center gap-0.5 text-[10px]">
-                            <GitFork className="w-3 h-3" /> {repo.forks_count}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </motion.a>
-                );
+                return <ProjectCard key={repo.id} repo={repo} index={index} status={status} />;
               })
             )}
           </div>

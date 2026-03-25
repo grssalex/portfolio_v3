@@ -49,6 +49,17 @@ export default function Hero() {
         case "sudo":
           output = "Nice try. This incident will be reported.";
           break;
+        case "rm -rf /":
+          output = "Deleting system files... 0%";
+          setTimeout(() => {
+            document.body.style.transition = "all 3s ease";
+            document.body.style.transform = "scale(0) rotate(720deg)";
+            document.body.style.opacity = "0";
+            setTimeout(() => {
+              alert("What have you done? 😱\n(Recharge la page pour réparer tes bêtises)");
+            }, 3000);
+          }, 1000);
+          break;
         case "date":
           output = new Date().toString();
           break;
