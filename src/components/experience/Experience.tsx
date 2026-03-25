@@ -15,12 +15,12 @@ const experiences = [
     skills: ["Développement d'IA", "Google Cloud Platform (GCP)"],
     missions: [
       {
-        title: "Datashopper – (Carrefour World Trade) Genève, Suisse",
+        title: "Datashopper – (Carrefour World Trade) | Genève, Suisse",
         desc: "Création d'une interface conversationnelle permettant d'interroger la donnée simplement (type \"chat avec la data\"), afin de rendre l'analyse accessible sans passer par des dashboards complexes.",
-        tech: "Looker, Gemini Data API, Gemini API, Anthropic API, Lite-llm"
+        tech: "Looker, Gemini Data API, Gemini API, Anthropic API & Lite-llm"
       },
       {
-        title: "Catman - Intégration IA",
+        title: "Catman - Intégration IA | Massy, France",
         desc: "Développement d'un outil d'analyse data par IA dédié aux performances produits et catégories, visant à faciliter l'accès aux insights métiers et améliorer la prise de décision grâce à l'intelligence artificielle.",
         tech: "BigQuery, Gemini & N8N"
       }
