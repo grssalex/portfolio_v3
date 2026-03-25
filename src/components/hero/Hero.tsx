@@ -21,7 +21,49 @@ const skills = [
 export default function Hero() {
   const [terminalState, setTerminalState] = useState(0);
   const [typedText, setTypedText] = useState("");
-  const fullCommand = "./launch-grssalex-portfolio-v3";
+  const [isInteractive, setIsInteractive] = useState(false);
+  const [commandInput, setCommandInput] = useState("");
+  const [commandHistory, setCommandHistory] = useState<{cmd: string, output: string}[]>([]);
+  const fullCommand = "./launch-grssalex-portfolio-v3.sh";
+
+  // Easter egg commands
+  const handleCommand = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && commandInput.trim()) {
+      const cmd = commandInput.trim().toLowerCase();
+      let output = "";
+
+      switch (cmd) {
+        case "whoami":
+          output = "Alexandre - Développeur Fullstack & IA chez Carrefour / AGWS";
+          break;
+        case "skills":
+          output = skills.join(", ");
+          break;
+        case "clear":
+          setCommandHistory([]);
+          setCommandInput("");
+          return;
+        case "sudo":
+          output = "Nice try. This incident will be reported.";
+          break;
+        case "date":
+          output = new Date().toString();
+          break;
+        case "help":
+          output = "Available commands: whoami, skills, clear, date, sudo, exit";
+          break;
+        case "exit":
+          setIsInteractive(false);
+          setCommandHistory([]);
+          return;
+        default:
+          output = `command not found: ${cmd}`;
+      }
+
+      setCommandHistory([...commandHistory, { cmd, output }]);
+      setCommandInput("");
+    }
+  };
 
   useEffect(() => {
     // Étape 1 : Taper la commande
@@ -73,9 +115,54 @@ export default function Hero() {
           </span>
         </motion.h1>
 
-        <div className="h-24 mb-12">
-          {terminalState < 2 ? (
-            <div className="font-mono text-sm sm:text-base text-[#666666] dark:text-[#888888] inline-block pt-2">
+        <div className="h-24 mb-12 relative">
+          {isInteractive ? (
+            <div className="font-mono text-sm sm:text-base text-[#666666] dark:text-[#888888] bg-[#F5F5F5] dark:bg-[#111111] p-4 rounded-lg border border-[#EAEAEA] dark:border-[#222222] w-full max-w-2xl h-48 overflow-y-auto absolute top-0 left-0 z-50 shadow-xl">
+              <div className="flex justify-between items-center mb-2 pb-2 border-b border-[#EAEAEA] dark:border-[#222222]">
+                <div className="flex gap-1.5">
+                  <div className="w-3 h-3 rounded-full bg-red-500 cursor-pointer" onClick={() => setIsInteractive(false)} />
+                  <div className="w-3 h-3 rounded-full bg-yellow-500" />
+                  <div className="w-3 h-3 rounded-full bg-green-500" />
+                </div>
+                <span className="text-xs">alex@portfolio ~ zsh</span>
+              </div>
+              
+              <div className="flex flex-col gap-1">
+                <div className="text-[#111111] dark:text-[#EDEDED] mb-2">Type 'help' to see available commands.</div>
+                
+                {commandHistory.map((item, i) => (
+                  <div key={i} className="flex flex-col">
+                    <div className="flex items-center gap-2">
+                      <span className="text-emerald-500">➜</span>
+                      <span className="text-blue-500">~</span>
+                      <span className="text-[#111111] dark:text-[#EDEDED]">{item.cmd}</span>
+                    </div>
+                    <div className="ml-6 mb-2">{item.output}</div>
+                  </div>
+                ))}
+                
+                <div className="flex items-center gap-2">
+                  <span className="text-emerald-500">➜</span>
+                  <span className="text-blue-500">~</span>
+                  <input
+                    type="text"
+                    value={commandInput}
+                    onChange={(e) => setCommandInput(e.target.value)}
+                    onKeyDown={handleCommand}
+                    className="bg-transparent border-none outline-none flex-1 text-[#111111] dark:text-[#EDEDED]"
+                    autoFocus
+                    spellCheck="false"
+                    autoComplete="off"
+                  />
+                </div>
+              </div>
+            </div>
+          ) : terminalState < 2 ? (
+            <div 
+              className="font-mono text-sm sm:text-base text-[#666666] dark:text-[#888888] inline-block pt-2 cursor-pointer hover:opacity-80 transition-opacity"
+              onClick={() => setIsInteractive(true)}
+              title="Click to open terminal"
+            >
               <div className="flex items-center gap-2">
                 <span className="text-emerald-500">➜</span>
                 <span className="text-blue-500">~</span>
@@ -95,7 +182,9 @@ export default function Hero() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, ease: "easeOut" }}
-              className="text-lg sm:text-xl text-[#666666] dark:text-[#888888] leading-relaxed max-w-2xl font-light"
+              className="text-lg sm:text-xl text-[#666666] dark:text-[#888888] leading-relaxed max-w-2xl font-light cursor-text"
+              onDoubleClick={() => setIsInteractive(true)}
+              title="Double click to open terminal"
             >
               Je conçois des agents & intégrations d&apos;intelligence artificielle pour Carrefour et je développe des applications web sur-mesure pour mes clients sous ma société AGWS.
             </motion.p>
