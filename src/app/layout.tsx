@@ -4,6 +4,7 @@ import "./globals.css";
 import Footer from "@/components/layout/Footer";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { MouseGlow } from "@/components/ui/MouseGlow";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], variable: "--font-space" });
@@ -27,6 +28,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange={false}
         >
+          <MouseGlow />
           <ThemeToggle />
           <main className="min-h-screen flex flex-col w-full max-w-[1400px] mx-auto px-6 sm:px-12 lg:px-24">
             {children}
