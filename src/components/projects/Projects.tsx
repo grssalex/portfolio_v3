@@ -74,6 +74,7 @@ export default function Projects() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [showAll, setShowAll] = useState(false);
+  const [selectedLanguage, setSelectedLanguage] = useState<string | null>(null);
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
@@ -163,8 +164,18 @@ export default function Projects() {
     fetchData();
   }, []);
 
+  // Extraire tous les langages uniques pour les filtres
+  const availableLanguages = Array.from(
+    new Set(repos.flatMap((r) => r.languages || []))
+  ).sort();
+
+  // Filtrer les repos selon le langage sélectionné
+  const filteredRepos = selectedLanguage
+    ? repos.filter((r) => r.languages?.includes(selectedLanguage))
+    : repos;
+
   // On limite l'affichage à 6 repos par défaut, ou tous si showAll est true
-  const displayedRepos = showAll ? repos : repos.slice(0, 6);
+  const displayedRepos = showAll ? filteredRepos : filteredRepos.slice(0, 6);
 
   return (
     <section id="projets" className="py-24 border-t border-[#EAEAEA] dark:border-[#222222]">
@@ -269,6 +280,50 @@ export default function Projects() {
 
         {/* Grille des Repos (Plus large : 9 colonnes, affichage dense) */}
         <div className="lg:col-span-9 flex flex-col gap-4">
+          {/* Filtres par langage */}
+          {!loading && !error && repos.length > 0 && availableLanguages.length > 0 && (
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="flex flex-wrap gap-2 mb-2"
+            >
+              <button
+                onClick={() => {
+                  setSelectedLanguage(null);
+                  setShowAll(false);
+                }}
+                className={`px-3 py-1.5 text-xs font-medium rounded-full transition-colors border ${
+                  selectedLanguage === null
+                    ? "bg-[#111111] text-white border-[#111111] dark:bg-white dark:text-black dark:border-white"
+                    : "bg-white text-[#666666] border-[#EAEAEA] hover:border-[#111111] dark:bg-[#0A0A0A] dark:text-[#888888] dark:border-[#222222] dark:hover:border-white"
+                }`}
+              >
+                Tous
+              </button>
+              {availableLanguages.map((lang) => (
+                <button
+                  key={lang}
+                  onClick={() => {
+                    setSelectedLanguage(lang);
+                    setShowAll(false);
+                  }}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full transition-colors border ${
+                    selectedLanguage === lang
+                      ? "bg-[#111111] text-white border-[#111111] dark:bg-white dark:text-black dark:border-white"
+                      : "bg-white text-[#666666] border-[#EAEAEA] hover:border-[#111111] dark:bg-[#0A0A0A] dark:text-[#888888] dark:border-[#222222] dark:hover:border-white"
+                  }`}
+                >
+                  <span
+                    className="w-2 h-2 rounded-full shrink-0"
+                    style={{ backgroundColor: languageColors[lang] || "#8b8b8b" }}
+                  />
+                  {lang}
+                </button>
+              ))}
+            </motion.div>
+          )}
+
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {loading ? (
               [...Array(6)].map((_, i) => (
@@ -351,7 +406,7 @@ export default function Projects() {
           </div>
 
           {/* Bouton "Voir plus" si on a plus de 6 repos */}
-          {!loading && repos.length > 6 && (
+          {!loading && filteredRepos.length > 6 && (
             <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -361,7 +416,7 @@ export default function Projects() {
                 onClick={() => setShowAll(!showAll)}
                 className="px-6 py-2 text-sm font-medium text-[#111111] dark:text-[#EDEDED] bg-white dark:bg-[#0A0A0A] border border-[#EAEAEA] dark:border-[#222222] rounded-full hover:bg-[#F5F5F5] dark:hover:bg-[#111111] transition-colors"
               >
-                {showAll ? "Voir moins" : `Voir tous les projets (${repos.length})`}
+                {showAll ? "Voir moins" : `Voir tous les projets (${filteredRepos.length})`}
               </button>
             </motion.div>
           )}
