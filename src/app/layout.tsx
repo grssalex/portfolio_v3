@@ -12,6 +12,23 @@ const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], variable: "--font-space
 export const metadata: Metadata = {
   title: "Alexandre | Développeur IA & Web",
   description: "Portfolio de développeur IA chez Carrefour et créateur d'expériences Web",
+  openGraph: {
+    title: "Alexandre | Développeur IA & Web",
+    description: "Portfolio de développeur IA chez Carrefour et créateur d'expériences Web",
+    url: "https://grssalex.dev",
+    siteName: "Alexandre Portfolio",
+    locale: "fr_FR",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Alexandre | Développeur IA & Web",
+    description: "Portfolio de développeur IA chez Carrefour et créateur d'expériences Web",
+    creator: "@grssalex",
+  },
+  authors: [{ name: "Alexandre" }],
+  creator: "Alexandre",
+  keywords: ["Développeur", "IA", "Web", "Fullstack", "React", "Next.js", "Python", "GCP", "Carrefour", "AGWS"],
 };
 
 export default function RootLayout({
