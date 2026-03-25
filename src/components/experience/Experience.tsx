@@ -17,12 +17,14 @@ const experiences = [
       {
         title: "Datashopper – (Carrefour World Trade) | Genève, Suisse",
         desc: "Création d'une interface conversationnelle permettant d'interroger la donnée simplement (type \"chat avec la data\"), afin de rendre l'analyse accessible sans passer par des dashboards complexes.",
-        tech: "Looker, Gemini Data API, Gemini API, Anthropic API & Lite-llm"
+        tech: "Looker, Gemini Data API, Gemini API, Anthropic API & Lite-llm",
+        date: undefined
       },
       {
         title: "Catman - Intégration IA | Massy, France",
         desc: "Développement d'un outil d'analyse data par IA dédié aux performances produits et catégories, visant à faciliter l'accès aux insights métiers et améliorer la prise de décision grâce à l'intelligence artificielle.",
-        tech: "BigQuery, Gemini & N8N"
+        tech: "BigQuery, Gemini & N8N",
+        date: undefined
       }
     ]
   },
@@ -38,12 +40,14 @@ const experiences = [
       {
         title: "TalentFindr - Développeur en Intelligence Artificielle",
         date: "Mars 2026 — Aujourd'hui",
-        desc: "J'ai rejoint TalentFindr et les équipes dirigées par Georges Garnier à temps partiel pour contribuer à l'accélération de la croissance de l'entreprise. Mon travail se concentre sur l'amélioration et l'évolution des systèmes d'IA existants tout en contribuant au développement de nouvelles solutions qui renforcent les capacités et les performances globales de la plateforme."
+        desc: "J'ai rejoint TalentFindr et les équipes dirigées par Georges Garnier à temps partiel pour contribuer à l'accélération de la croissance de l'entreprise. Mon travail se concentre sur l'amélioration et l'évolution des systèmes d'IA existants tout en contribuant au développement de nouvelles solutions qui renforcent les capacités et les performances globales de la plateforme.",
+        tech: undefined
       },
       {
         title: "Setup NC - Spécialiste en Maintenance Web",
         date: "Janv. 2026 — Aujourd'hui",
-        desc: "Je collabore avec Setup NC, une entreprise basée en Nouvelle-Calédonie, pour la maintenance et la gestion de plusieurs sites web. Mon rôle inclut la gestion des mises à jour techniques, la résolution des problèmes, l'optimisation des performances et la garantie de la stabilité et de la disponibilité des plateformes."
+        desc: "Je collabore avec Setup NC, une entreprise basée en Nouvelle-Calédonie, pour la maintenance et la gestion de plusieurs sites web. Mon rôle inclut la gestion des mises à jour techniques, la résolution des problèmes, l'optimisation des performances et la garantie de la stabilité et de la disponibilité des plateformes.",
+        tech: undefined
       }
     ]
   },
