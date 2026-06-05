@@ -12,6 +12,13 @@ export function ThemeToggle() {
     setMounted(true);
   }, []);
 
+  // Expose setTheme globally so terminal can trigger dark mode
+  useEffect(() => {
+    if (!mounted) return;
+    (window as any).__setTheme = setTheme;
+    return () => { delete (window as any).__setTheme; };
+  }, [mounted, setTheme]);
+
   if (!mounted) {
     return <div className="w-10 h-10" />;
   }
