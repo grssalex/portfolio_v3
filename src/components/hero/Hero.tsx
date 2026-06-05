@@ -2,210 +2,133 @@
 
 import { motion, useDragControls } from "framer-motion";
 import { ArrowUpRight, Github, Linkedin, Mail } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 
-// Composant Matrix Background
+// ─── Matrix Background ────────────────────────────────────────────────────────
 const MatrixRain = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
-
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
-
     const katakana = "アァカサタナハマヤャラワガザダバパイィキシチニヒミリヰギジヂビピウゥクスツヌフムユュルグズブヅプエェケセテネヘメレゲゼデベペオォコソトノホモヨョロゴゾドボポヴッン";
     const latin = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     const nums = "0123456789";
     const alphabet = katakana + latin + nums;
-
     const fontSize = 16;
     const columns = canvas.width / fontSize;
-
     const rainDrops: number[] = [];
-    for (let x = 0; x < columns; x++) {
-      rainDrops[x] = 1;
-    }
-
+    for (let x = 0; x < columns; x++) rainDrops[x] = 1;
     const draw = () => {
       ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
-
       ctx.fillStyle = "#0F0";
       ctx.font = fontSize + "px monospace";
-
       for (let i = 0; i < rainDrops.length; i++) {
         const text = alphabet.charAt(Math.floor(Math.random() * alphabet.length));
         ctx.fillText(text, i * fontSize, rainDrops[i] * fontSize);
-
-        if (rainDrops[i] * fontSize > canvas.height && Math.random() > 0.975) {
-          rainDrops[i] = 0;
-        }
+        if (rainDrops[i] * fontSize > canvas.height && Math.random() > 0.975) rainDrops[i] = 0;
         rainDrops[i]++;
       }
     };
-
     const interval = setInterval(draw, 30);
-    
-    const handleResize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    };
-    
+    const handleResize = () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; };
     window.addEventListener("resize", handleResize);
-    
-    return () => {
-      clearInterval(interval);
-      window.removeEventListener("resize", handleResize);
-    };
+    return () => { clearInterval(interval); window.removeEventListener("resize", handleResize); };
   }, []);
-
-  return (
-    <canvas
-      ref={canvasRef}
-      className="fixed inset-0 z-[-1] opacity-30 pointer-events-none"
-    />
-  );
+  return <canvas ref={canvasRef} className="fixed inset-0 z-[-1] opacity-30 pointer-events-none" />;
 };
 
-const skills = [
-  "gcp",
-  "docker",
-  "raspberrypi",
-  "github",
-  "python",
-  "ts",
-  "js",
-  "c",
-  "bash",
-  "linux",
-  "apple",
-];
+// ─── Floating Skill Icon ──────────────────────────────────────────────────────
+interface FloatingIcon {
+  id: number;
+  skill: string;
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+}
+
+const FloatingSkillIcon = ({ icon, onDone }: { icon: FloatingIcon; onDone: (id: number) => void }) => (
+  <motion.div
+    className="fixed pointer-events-none z-50"
+    initial={{ x: icon.x, y: icon.y, opacity: 1, scale: 1 }}
+    animate={{
+      x: [icon.x, icon.x + icon.vx * 60, icon.x + icon.vx * 120],
+      y: [icon.y, icon.y + icon.vy * 60, icon.y + icon.vy * 120 + 80],
+      opacity: [1, 1, 0],
+      scale: [1, 1.2, 0.8],
+      rotate: [0, icon.vx * 15, icon.vx * 30],
+    }}
+    transition={{ duration: 2.5, ease: "easeIn" }}
+    onAnimationComplete={() => onDone(icon.id)}
+  >
+    <img src={`https://skillicons.dev/icons?i=${icon.skill}&theme=dark`} alt={icon.skill} className="w-10 h-10 drop-shadow-lg" draggable={false} />
+  </motion.div>
+);
+
+// ─── Skills ───────────────────────────────────────────────────────────────────
+const skills = ["gcp", "docker", "raspberrypi", "github", "python", "ts", "js", "c", "bash", "linux", "apple"];
 
 export default function Hero() {
   const [terminalState, setTerminalState] = useState(0);
   const [typedText, setTypedText] = useState("");
-  const [isInteractive, setIsInteractive] = useState(false);
   const [isMatrixMode, setIsMatrixMode] = useState(false);
-  const [commandInput, setCommandInput] = useState("");
-  const [commandHistory, setCommandHistory] = useState<{cmd: string, output: string}[]>([]);
+  const [floatingIcons, setFloatingIcons] = useState<FloatingIcon[]>([]);
+  const [iconCounter, setIconCounter] = useState(0);
   const fullCommand = "./launch-grssalex-portfolio-v3.sh";
-  
-  const dragControls = useDragControls();
-  const terminalRef = useRef<HTMLDivElement>(null);
 
-  // Easter egg commands
-  const handleCommand = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && commandInput.trim()) {
-      const cmd = commandInput.trim().toLowerCase();
-      let output = "";
+  // Expose setMatrixMode globally so EasterEgg terminal can trigger it
+  useEffect(() => {
+    (window as any).__setMatrixMode = setIsMatrixMode;
+    return () => { delete (window as any).__setMatrixMode; };
+  }, []);
 
-      switch (cmd) {
-        case "whoami":
-          output = "Alexandre - Développeur Fullstack & IA chez Carrefour / AGWS";
-          break;
-        case "skills":
-          output = skills.join(", ");
-          break;
-        case "clear":
-          setCommandHistory([]);
-          setCommandInput("");
-          return;
-        case "sudo":
-          output = "Nice try. This incident will be reported.";
-          break;
-        case "rm -rf /":
-          output = "Deleting system files... 0%";
-          setTimeout(() => {
-            // Effet trou noir (aspiration vers le centre)
-            document.body.style.transition = "all 2.5s cubic-bezier(0.5, 0, 0.2, 1)";
-            document.body.style.transform = "scale(0.001)";
-            document.body.style.filter = "blur(20px) brightness(0)";
-            document.body.style.borderRadius = "50%";
-            
-            // Créer le message de fin directement dans le DOM
-            setTimeout(() => {
-              const msg = document.createElement("div");
-              msg.style.position = "fixed";
-              msg.style.top = "0";
-              msg.style.left = "0";
-              msg.style.width = "100vw";
-              msg.style.height = "100vh";
-              msg.style.backgroundColor = "black";
-              msg.style.color = "#00ff00";
-              msg.style.fontFamily = "monospace";
-              msg.style.display = "flex";
-              msg.style.flexDirection = "column";
-              msg.style.alignItems = "center";
-              msg.style.justifyContent = "center";
-              msg.style.zIndex = "999999";
-              msg.style.transform = "scale(1)"; // Annule le scale du body pour cet élément
-              
-              // On doit l'attacher au html car le body est réduit à 0
-              msg.innerHTML = `
-                <h1 style="font-size: 2rem; margin-bottom: 20px;">SYSTEM DESTROYED</h1>
-                <p>What have you done? 😱</p>
-                <button onclick="window.location.reload()" style="margin-top: 30px; padding: 10px 20px; border: 1px solid #00ff00; background: transparent; color: #00ff00; cursor: pointer; font-family: monospace;">
-                  REBOOT SYSTEM
-                </button>
-              `;
-              document.documentElement.appendChild(msg);
-            }, 2500);
-          }, 1000);
-          break;
-        case "date":
-          output = new Date().toString();
-          break;
-        case "help":
-          output = "Available commands: whoami, skills, clear, date, sudo, matrix, exit";
-          break;
-        case "matrix":
-          setIsMatrixMode(!isMatrixMode);
-          output = isMatrixMode ? "Exiting the Matrix..." : "Wake up, Neo...";
-          if (!isMatrixMode) {
-            document.documentElement.classList.add('dark');
-          }
-          break;
-        case "exit":
-          setIsInteractive(false);
-          setCommandHistory([]);
-          return;
-        default:
-          output = `command not found: ${cmd}`;
-      }
+  const handleSkillClick = useCallback((skill: string, e: React.MouseEvent) => {
+    const rect = (e.target as HTMLElement).getBoundingClientRect();
+    const angle = Math.random() * Math.PI * 2;
+    const speed = 3 + Math.random() * 3;
+    const newIcon: FloatingIcon = {
+      id: iconCounter,
+      skill,
+      x: rect.left + rect.width / 2 - 20,
+      y: rect.top + rect.height / 2 - 20,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed - 2,
+    };
+    setFloatingIcons(prev => [...prev, newIcon]);
+    setIconCounter(c => c + 1);
+  }, [iconCounter]);
 
-      setCommandHistory([...commandHistory, { cmd, output }]);
-      setCommandInput("");
-    }
-  };
+  const removeFloatingIcon = useCallback((id: number) => {
+    setFloatingIcons(prev => prev.filter(i => i.id !== id));
+  }, []);
 
   useEffect(() => {
-    // Étape 1 : Taper la commande
     if (terminalState === 0) {
       if (typedText.length < fullCommand.length) {
-        const timeout = setTimeout(() => {
-          setTypedText(fullCommand.slice(0, typedText.length + 1));
-        }, 30 + Math.random() * 30); // Vitesse intermédiaire
-        return () => clearTimeout(timeout);
+        const t = setTimeout(() => setTypedText(fullCommand.slice(0, typedText.length + 1)), 30 + Math.random() * 30);
+        return () => clearTimeout(t);
       } else {
-        const timeout = setTimeout(() => setTerminalState(1), 350);
-        return () => clearTimeout(timeout);
+        const t = setTimeout(() => setTerminalState(1), 350);
+        return () => clearTimeout(t);
       }
-    }
-    // Étape 2 : Afficher "Chargement..."
-    else if (terminalState === 1) {
-      const timeout = setTimeout(() => setTerminalState(2), 700);
-      return () => clearTimeout(timeout);
+    } else if (terminalState === 1) {
+      const t = setTimeout(() => setTerminalState(2), 700);
+      return () => clearTimeout(t);
     }
   }, [terminalState, typedText]);
 
   return (
     <section className="pt-32 pb-20 lg:pt-48 lg:pb-32 w-full">
       {isMatrixMode && <MatrixRain />}
+      {floatingIcons.map(icon => (
+        <FloatingSkillIcon key={icon.id} icon={icon} onDone={removeFloatingIcon} />
+      ))}
+
       <div className="max-w-4xl">
         <motion.div
           initial={{ opacity: 0, y: 10 }}
@@ -214,8 +137,8 @@ export default function Hero() {
           className="flex items-center gap-3 mb-8"
         >
           <div className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75" />
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
           </div>
           <span className="text-sm font-medium text-[#666666] dark:text-[#888888] uppercase tracking-wider">
             Disponible
@@ -230,74 +153,14 @@ export default function Hero() {
         >
           Alexandre. <br />
           <span className="text-[#666666] dark:text-[#888888]">
-            Développeur Fullstack & IA.
+            Développeur spécialisé en intelligence artificielle.
           </span>
         </motion.h1>
 
-        <div className="h-24 mb-12 relative">
-          {isInteractive ? (
-            <motion.div 
-              ref={terminalRef}
-              drag
-              dragControls={dragControls}
-              dragListener={false}
-              dragMomentum={false}
-              className="font-mono text-sm sm:text-base text-[#666666] dark:text-[#888888] bg-[#F5F5F5] dark:bg-[#111111] p-0 rounded-lg border border-[#EAEAEA] dark:border-[#222222] w-full max-w-2xl h-64 absolute top-0 left-0 z-50 shadow-2xl flex flex-col overflow-hidden resize min-h-[200px] min-w-[300px] max-h-[80vh] max-w-[90vw]"
-              style={{ touchAction: "none" }}
-            >
-              {/* Header draggable */}
-              <div 
-                className="flex justify-between items-center px-4 py-3 bg-[#EAEAEA] dark:bg-[#222222] cursor-grab active:cursor-grabbing select-none"
-                onPointerDown={(e) => dragControls.start(e)}
-              >
-                <div className="flex gap-2">
-                  <div className="w-3 h-3 rounded-full bg-red-500 cursor-pointer hover:bg-red-600 transition-colors" onClick={() => setIsInteractive(false)} />
-                  <div className="w-3 h-3 rounded-full bg-yellow-500" />
-                  <div className="w-3 h-3 rounded-full bg-green-500" />
-                </div>
-                <span className="text-xs font-medium text-[#111111] dark:text-[#EDEDED]">alex@portfolio ~ zsh</span>
-                <div className="w-10"></div> {/* Spacer pour centrer le titre */}
-              </div>
-              
-              {/* Contenu du terminal */}
-              <div className="flex-1 p-4 overflow-y-auto">
-                <div className="flex flex-col gap-1">
-                  <div className="text-[#111111] dark:text-[#EDEDED] mb-2">Type 'help' to see available commands.</div>
-                  
-                  {commandHistory.map((item, i) => (
-                    <div key={i} className="flex flex-col">
-                      <div className="flex items-center gap-2">
-                        <span className="text-emerald-500">➜</span>
-                        <span className="text-blue-500">~</span>
-                        <span className="text-[#111111] dark:text-[#EDEDED]">{item.cmd}</span>
-                      </div>
-                      <div className="ml-6 mb-2 whitespace-pre-wrap">{item.output}</div>
-                    </div>
-                  ))}
-                  
-                  <div className="flex items-center gap-2">
-                    <span className="text-emerald-500">➜</span>
-                    <span className="text-blue-500">~</span>
-                    <input
-                      type="text"
-                      value={commandInput}
-                      onChange={(e) => setCommandInput(e.target.value)}
-                      onKeyDown={handleCommand}
-                      className="bg-transparent border-none outline-none flex-1 text-[#111111] dark:text-[#EDEDED]"
-                      autoFocus
-                      spellCheck="false"
-                      autoComplete="off"
-                    />
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          ) : terminalState < 2 ? (
-            <div 
-              className="font-mono text-sm sm:text-base text-[#666666] dark:text-[#888888] inline-block pt-2 cursor-pointer hover:opacity-80 transition-opacity"
-              onClick={() => setIsInteractive(true)}
-              title="Click to open terminal"
-            >
+        {/* Typing animation → static text, no interactive terminal here */}
+        <div className="h-24 mb-12">
+          {terminalState < 2 ? (
+            <div className="font-mono text-sm sm:text-base text-[#666666] dark:text-[#888888] inline-block pt-2">
               <div className="flex items-center gap-2">
                 <span className="text-emerald-500">➜</span>
                 <span className="text-blue-500">~</span>
@@ -317,9 +180,7 @@ export default function Hero() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, ease: "easeOut" }}
-              className="text-lg sm:text-xl text-[#666666] dark:text-[#888888] leading-relaxed max-w-2xl font-light cursor-text"
-              onDoubleClick={() => setIsInteractive(true)}
-              title="Double click to open terminal"
+              className="text-lg sm:text-xl text-[#666666] dark:text-[#888888] leading-relaxed max-w-2xl font-light"
             >
               Je conçois des agents & intégrations d&apos;intelligence artificielle pour Carrefour et je développe des applications web sur-mesure pour mes clients sous ma société AGWS.
             </motion.p>
@@ -338,24 +199,12 @@ export default function Hero() {
                 key={skill}
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: [20, -10, 0], opacity: 1 }}
-                transition={{
-                  duration: 0.6,
-                  delay: 0.4 + index * 0.05,
-                  ease: "easeOut"
-                }}
+                transition={{ duration: 0.6, delay: 0.4 + index * 0.05, ease: "easeOut" }}
+                className="cursor-pointer select-none"
+                onClick={e => handleSkillClick(skill, e)}
               >
-                <img
-                  src={`https://skillicons.dev/icons?i=${skill}&theme=light`}
-                  alt={skill}
-                  className="w-12 h-12 dark:hidden"
-                  loading="lazy"
-                />
-                <img
-                  src={`https://skillicons.dev/icons?i=${skill}&theme=dark`}
-                  alt={skill}
-                  className="w-12 h-12 hidden dark:block"
-                  loading="lazy"
-                />
+                <img src={`https://skillicons.dev/icons?i=${skill}&theme=light`} alt={skill} className="w-12 h-12 dark:hidden hover:scale-110 transition-transform active:scale-95" draggable={false} />
+                <img src={`https://skillicons.dev/icons?i=${skill}&theme=dark`} alt={skill} className="w-12 h-12 hidden dark:block hover:scale-110 transition-transform active:scale-95" draggable={false} />
               </motion.div>
             ))}
           </motion.div>
@@ -368,17 +217,11 @@ export default function Hero() {
             transition={{ duration: 0.5, delay: 0.8, ease: "easeOut" }}
             className="flex flex-wrap items-center gap-6"
           >
-            <a
-              href="#projets"
-              className="group flex items-center gap-2 text-sm font-medium text-[#111111] dark:text-[#EDEDED] border-b border-[#111111] dark:border-[#EDEDED] pb-1 hover:text-[#666666] dark:hover:text-[#888888] hover:border-[#666666] dark:hover:border-[#888888] transition-colors"
-            >
+            <a href="#projets" className="group flex items-center gap-2 text-sm font-medium text-[#111111] dark:text-[#EDEDED] border-b border-[#111111] dark:border-[#EDEDED] pb-1 hover:text-[#666666] dark:hover:text-[#888888] hover:border-[#666666] dark:hover:border-[#888888] transition-colors">
               Voir les projets
               <ArrowUpRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
             </a>
-            <a
-              href="#contact"
-              className="group flex items-center gap-2 text-sm font-medium text-[#666666] dark:text-[#888888] hover:text-[#111111] dark:hover:text-[#EDEDED] transition-colors"
-            >
+            <a href="#contact" className="group flex items-center gap-2 text-sm font-medium text-[#666666] dark:text-[#888888] hover:text-[#111111] dark:hover:text-[#EDEDED] transition-colors">
               Me contacter
             </a>
           </motion.div>
@@ -392,15 +235,12 @@ export default function Hero() {
             className="mt-20 flex items-center gap-6"
           >
             <a href="https://github.com/grssalex" target="_blank" rel="noopener noreferrer" className="text-[#666666] dark:text-[#888888] hover:text-[#111111] dark:hover:text-[#EDEDED] transition-colors">
-              <span className="sr-only">GitHub</span>
               <Github className="w-5 h-5" />
             </a>
             <a href="https://linkedin.com/in/grssalex" target="_blank" rel="noopener noreferrer" className="text-[#666666] dark:text-[#888888] hover:text-[#111111] dark:hover:text-[#EDEDED] transition-colors">
-              <span className="sr-only">LinkedIn</span>
               <Linkedin className="w-5 h-5" />
             </a>
             <a href="mailto:contact@grssalex.dev" className="text-[#666666] dark:text-[#888888] hover:text-[#111111] dark:hover:text-[#EDEDED] transition-colors">
-              <span className="sr-only">Email</span>
               <Mail className="w-5 h-5" />
             </a>
           </motion.div>
