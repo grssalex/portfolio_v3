@@ -1,7 +1,7 @@
 import Hero from "@/components/hero/Hero";
 import Experience from "@/components/experience/Experience";
 import Projects from "@/components/projects/Projects";
-import Contact from "@/components/contact/Contact";
+import EasterEgg from "@/components/easter/EasterEgg";
 
 export default function Home() {
   return (
@@ -9,7 +9,7 @@ export default function Home() {
       <Hero />
       <Experience />
       <Projects />
-      <Contact />
+      <EasterEgg />
     </div>
   );
 }

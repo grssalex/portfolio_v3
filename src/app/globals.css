@@ -27,6 +27,18 @@ body {
   font-family: var(--font-sans);
   letter-spacing: -0.01em;
 }
+/* Prevent browser from overriding link colors on :active/:visited */
+a {
+  color: inherit;
+  -webkit-tap-highlight-color: transparent;
+}
+a:visited {
+  color: inherit;
+}
+a:active {
+  color: inherit;
+}
+
 
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-display);
