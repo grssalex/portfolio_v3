@@ -5,6 +5,7 @@
 @theme {
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--font-space), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-mono), ui-monospace, SFMono-Regular, monospace;
   
   --animate-marquee: marquee 25s linear infinite;
 
@@ -28,15 +29,16 @@ body {
   letter-spacing: -0.01em;
 }
 /* Prevent browser from overriding link colors on :active/:visited */
-a {
-  color: inherit;
-  -webkit-tap-highlight-color: transparent;
-}
-a:visited {
-  color: inherit;
-}
-a:active {
-  color: inherit;
+/* Dans @layer base pour que les utilitaires Tailwind (text-*) gardent la priorité */
+@layer base {
+  a {
+    color: inherit;
+    -webkit-tap-highlight-color: transparent;
+  }
+  a:visited,
+  a:active {
+    color: inherit;
+  }
 }
 
 
