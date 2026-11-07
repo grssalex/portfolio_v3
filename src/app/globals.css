@@ -2,37 +2,63 @@
 
 @custom-variant dark (&:is(.dark *));
 
-@theme {
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-space), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-mono), ui-monospace, SFMono-Regular, monospace;
-  
-  --animate-marquee: marquee 25s linear infinite;
-
-  @keyframes marquee {
-    0% { transform: translateX(0%); }
-    100% { transform: translateX(-33.33%); }
-  }
-}
-
-/* Explicitly set color-scheme to allow smooth transitions */
+/* Palette pilotée par variables : le mode sombre ne change que les valeurs. */
 :root {
   color-scheme: light;
+  --bg: #ffffff;
+  --fg: #0a0a0a;
+  --muted: #5f5f5f;
+  --line: #eaeaea;
+  --line-strong: #d4d4d4;
+  --subtle: #fafafa;
+  --code: #f4f4f5;
+  --active: #f2f2f2;
+  --term: #fcfcfc;
+  --accent: #2563eb;
 }
 
-:root[class~="dark"] {
+:root.dark {
   color-scheme: dark;
+  --bg: #0a0a0a;
+  --fg: #ededed;
+  --muted: #a1a1a1;
+  --line: #262626;
+  --line-strong: #3a3a3a;
+  --subtle: #111111;
+  --code: #1a1a1a;
+  --active: #1c1c1c;
+  --term: #0d0d0d;
+  --accent: #7fa7ff;
+}
+
+@theme inline {
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jbm), ui-monospace, SFMono-Regular, monospace;
+
+  --color-bg: var(--bg);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-subtle: var(--subtle);
+  --color-code: var(--code);
+  --color-active: var(--active);
+  --color-term: var(--term);
+  --color-accent: var(--accent);
+  --color-tile: color-mix(in srgb, var(--accent) 9%, transparent);
+  --color-callout: color-mix(in srgb, var(--accent) 6%, transparent);
+  --color-callout-line: color-mix(in srgb, var(--accent) 25%, transparent);
 }
 
 body {
   font-family: var(--font-sans);
   letter-spacing: -0.01em;
 }
-/* Prevent browser from overriding link colors on :active/:visited */
-/* Dans @layer base pour que les utilitaires Tailwind (text-*) gardent la priorité */
+
 @layer base {
   a {
     color: inherit;
+    text-decoration: none;
     -webkit-tap-highlight-color: transparent;
   }
   a:visited,
@@ -41,14 +67,25 @@ body {
   }
 }
 
-
-h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-display);
-  letter-spacing: -0.03em;
+@keyframes blink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
 }
 
 @layer utilities {
-  .text-balance {
-    text-wrap: balance;
+  .cursor-blink {
+    animation: blink 1s steps(1) infinite;
   }
+  .lift {
+    transition: border-color 0.15s ease, transform 0.15s ease;
+  }
+  .lift:hover {
+    border-color: var(--accent);
+    transform: translateY(-1px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cursor-blink, .animate-ping { animation: none; }
+  .lift:hover { transform: none; }
 }

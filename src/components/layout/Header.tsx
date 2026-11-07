@@ -1,44 +1,50 @@
 "use client";
 
-import { Moon, Sun } from "lucide-react";
+import { Code2, Moon, Sun, User } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useMounted } from "@/lib/useMounted";
 
-const links = [
-  { href: "#experience", label: "Expérience" },
-  { href: "#stack", label: "Stack" },
-  { href: "#contact", label: "Contact" },
-];
+const navLink =
+  "inline-flex items-center gap-2 min-h-[38px] px-3 rounded-lg text-sm text-muted hover:bg-active hover:text-fg transition-colors";
 
 export default function Header() {
   const mounted = useMounted();
   const { resolvedTheme, setTheme } = useTheme();
-  const isDark = resolvedTheme === "dark";
+  const isDark = mounted && resolvedTheme === "dark";
 
   return (
-    <header className="flex flex-wrap items-center justify-between gap-4 py-6">
-      <a href="#top" className="font-mono text-[13px]">
-        grssalex.dev
-      </a>
-      <nav aria-label="Navigation principale" className="flex flex-wrap items-center gap-6 text-sm">
-        {links.map((l) => (
-          <a
-            key={l.href}
-            href={l.href}
-            className="text-[#5F5F5F] dark:text-[#8F8F8F] hover:text-[#111111] dark:hover:text-[#EDEDED] transition-colors"
-          >
-            {l.label}
+    <header className="border-b border-line bg-bg">
+      <div className="max-w-[1320px] mx-auto px-4 sm:px-8 min-h-[62px] flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <span className="w-[30px] h-[30px] rounded-lg bg-fg text-bg inline-flex items-center justify-center font-bold text-xs">
+            AG
+          </span>
+          <a href="#intro" className="font-semibold">
+            Alexandre Grosse
           </a>
-        ))}
-        <button
-          type="button"
-          onClick={() => setTheme(isDark ? "light" : "dark")}
-          aria-label="Changer de thème"
-          className="w-11 h-11 inline-flex items-center justify-center rounded-full border border-[#E6E6E6] dark:border-[#222222] hover:bg-[#F0F0F0] dark:hover:bg-[#151515] transition-colors"
-        >
-          {mounted && isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-        </button>
-      </nav>
+          <span className="text-line-strong">/</span>
+          <span className="text-sm text-muted">Portfolio</span>
+          <span className="hidden sm:inline font-mono text-[11px] px-2 py-0.5 border border-line rounded-full text-muted">
+            v2026.11
+          </span>
+        </div>
+        <div className="flex flex-wrap items-center gap-1.5">
+          <a className={navLink} href="https://github.com/grssalex" target="_blank" rel="noopener noreferrer">
+            <Code2 className="w-[15px] h-[15px]" /> GitHub
+          </a>
+          <a className={navLink} href="https://linkedin.com/in/grssalex" target="_blank" rel="noopener noreferrer">
+            <User className="w-[15px] h-[15px]" /> LinkedIn
+          </a>
+          <button
+            type="button"
+            onClick={() => setTheme(isDark ? "light" : "dark")}
+            aria-label="Changer de thème"
+            className="ml-1 w-10 h-10 inline-flex items-center justify-center border border-line rounded-[9px] hover:bg-active transition-colors"
+          >
+            {isDark ? <Sun className="w-[15px] h-[15px]" /> : <Moon className="w-[15px] h-[15px]" />}
+          </button>
+        </div>
+      </div>
     </header>
   );
 }
